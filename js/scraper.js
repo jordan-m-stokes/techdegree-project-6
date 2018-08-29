@@ -23,18 +23,25 @@ const URL_SHIRT = 'http://shirts4mike.com/shirt.php?id';
     - helper functions -
 *******************************************************************************/
 
+//data storage for "processPacket" function
 let buffer = {};
 let count = {};
 
+//processes a response using the jQuery for the given url
 function processPacket(jQuery, url)
 {
+    //if url is the catalog page, then get all the t-shirt urls and scrape them
+    //indivually
     if(url === URL_CATALOG)
     {
+        //gets list of t-shirts from catalog page
         const productsRawHtml = jQuery('.products').children('li');
 
         buffer[URL_CATALOG] = [];
+        //stores the amount of t-shirts in memory
         count[URL_CATALOG] = productsRawHtml.length;
 
+        //makes a seperate ajax request to each of the shirts websites
         productsRawHtml.each((index, element) =>
         {
             const text = jQuery(element).html();
@@ -43,29 +50,42 @@ function processPacket(jQuery, url)
             scrape(shirtUrl);
         });
     }
+    //scrapes data from shirt page
     else if(url.startsWith(URL_SHIRT))
     {
+        //creates a new shirt object from jQuery
         let shirt = Shirt.construct(jQuery, url);
 
+        //stores shirt object in memory
         buffer[URL_CATALOG].push(shirt);
 
+        //if all shirts were scraped, then the csv file is generated
         if(buffer[URL_CATALOG].length === count[URL_CATALOG])
         {
-            const csv = DataManager.convertToCSV(buffer[URL_CATALOG], ['title', 'price', 'url', 'imgUrl']);
+            //converts shirt buffer to csv data
+            const csv = DataManager.convertToCSV(buffer[URL_CATALOG], ['title', 'price', 'imgUrl', 'url']);
+            //gets current time to timestamp csv file
+            const date = new Date();
+            const fileName = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}.csv`;
 
-            DataManager.overwriteFile('shirts4mike-catalog.csv', csv);
+            //stores data in a csv file
+            DataManager.overwriteFile(fileName, csv);
         }
     }
 }
 
+//function scrapes html based on the given url
 function scrape(url)
 {
+    //creates a request
     Request(url, (error, response, html) =>
     {
+        //if no error the response is processed
         if(!error && response.statusCode == 200)
         {
             processPacket(Cheerio.load(html), url);
         }
+        //else error is thrown
         else
         {
             console.error(error);

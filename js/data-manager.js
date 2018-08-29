@@ -13,6 +13,7 @@ const FileSystem = require('fs');
     - fields -
 *******************************************************************************/
 
+//directories for what's stored
 const dataDirectory = './data/';
 const errorLogDirectory = './scraper-error.log';
 
@@ -20,22 +21,26 @@ const errorLogDirectory = './scraper-error.log';
     - helper functions -
 *******************************************************************************/
 
+//function logs given error to console and to a "scraper-error.log" file
 function logError(error)
 {
+    //gets current time
     const date = new Date();
 
     try
     {
         const divider = '------------------------------------------------------------------------------------------------'
-
+        //writes error
         FileSystem.appendFileSync(errorLogDirectory, `\n${divider}\nOccurred on:\t[${date}]\n\n${error.stack}\n${divider}\n`);
     }
+    //if writing file throws an error, it's logged to console
     catch(error)
     {
         console.error(error);
     }
 }
 
+//writes given data to given file path
 function overwriteFile(path, data)
 {
     try
@@ -54,6 +59,7 @@ function overwriteFile(path, data)
 
 }
 
+//converts javascript objects to csv based on the given keys
 function convertToCSV(object, keys)
 {
     try
@@ -71,6 +77,7 @@ function convertToCSV(object, keys)
     }
 }
 
+//makes sure needed directories and files exist and are ready for use
 function init()
 {
     try
