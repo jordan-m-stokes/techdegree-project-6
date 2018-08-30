@@ -91,7 +91,7 @@ function scrape(url)
         //else error is thrown
         else
         {
-            console.error(error);
+            console.log(`There’s been an error. Cannot connect to ${url}.`);
             DataManager.logError(error);
         }
     });
