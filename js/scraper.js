@@ -28,7 +28,7 @@ let buffer = {};
 let count = {};
 
 //processes a response using the jQuery for the given url
-function processPacket(jQuery, url)
+function processPacket(jQuery, url, timeStamp)
 {
     //if url is the catalog page, then get all the t-shirt urls and scrape them
     //indivually
@@ -54,7 +54,7 @@ function processPacket(jQuery, url)
     else if(url.startsWith(URL_SHIRT))
     {
         //creates a new shirt object from jQuery
-        let shirt = Shirt.construct(jQuery, url);
+        let shirt = Shirt.construct(jQuery, url, timeStamp);
 
         //stores shirt object in memory
         buffer[URL_CATALOG].push(shirt);
@@ -63,7 +63,7 @@ function processPacket(jQuery, url)
         if(buffer[URL_CATALOG].length === count[URL_CATALOG])
         {
             //converts shirt buffer to csv data
-            const csv = DataManager.convertToCSV(buffer[URL_CATALOG], ['title', 'price', 'imgUrl', 'url']);
+            const csv = DataManager.convertToCSV(buffer[URL_CATALOG], ['title', 'price', 'imgUrl', 'url', 'timeStamp']);
             //gets current time to timestamp csv file
             const date = new Date();
             const fileName = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}.csv`;
@@ -83,7 +83,10 @@ function scrape(url)
         //if no error the response is processed
         if(!error && response.statusCode == 200)
         {
-            processPacket(Cheerio.load(html), url);
+            const date = new Date();
+            const timeStamp = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+
+            processPacket(Cheerio.load(html), url, timeStamp);
         }
         //else error is thrown
         else
